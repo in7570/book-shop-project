@@ -1,9 +1,9 @@
 import express from 'express';
+import { body, validationResult } from 'express-validator';
+
 const router = express.Router();
 
 router.use(express.json());
-
-import { body, validationResult } from 'express-validator';
 
 const validate = (req, res, next) => {
   const err = validationResult(req);
@@ -22,6 +22,7 @@ router.post('/join', [validate], async (req, res) => {
     console.error(error);
   }
 });
+
 // 로그인API
 router.post('/login', async (req, res) => {
   try {
@@ -30,6 +31,7 @@ router.post('/login', async (req, res) => {
     console.error(error);
   }
 });
+
 // 비밀번호 초기화 요청
 router.post('/reset', async (req, res) => {
   try {
@@ -38,11 +40,14 @@ router.post('/reset', async (req, res) => {
     console.error(error);
   }
 });
+
 // 비밀번호 초기화
-router.post('/reset', async (req, res) => {
+router.put('/reset', async (req, res) => {
   try {
     res.status(200).json();
   } catch (error) {
     console.error(error);
   }
 });
+
+export default router;
