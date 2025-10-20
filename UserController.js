@@ -13,6 +13,7 @@ export const join = async (req, res) => {
     await connection.query(sql, values);
     res.status(StatusCodes.CREATED).json(`회원가입완`);
   } catch {
+    console.error(error);
     res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
@@ -47,22 +48,43 @@ export const login = async (req, res) => {
       res.status(403).json(`아이디 또는 비밀번호가 틀렸습니다!`);
     }
   } catch {
+    console.error(error);
     res.status(StatusCodes.UNAUTHORIZED).end();
   }
 };
 
 export const requestPasswordReset = async (req, res) => {
   try {
-    res.status(200).json();
+    const { email } = req.body;
+
+    let sql = `SELECT * FROM users WHERE email = ?`;
+    const results = await connection.query(sql, [email]);
+    const user = results[0];
+    if (user) {
+      return res.status(StatusCodes.OK).end();
+    } else {
+      return res.status(StatusCodes.UNAUTHORIZED).end();
+    }
   } catch (error) {
     console.error(error);
+    return res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
 
 export const passwordReset = async (req, res) => {
   try {
-    res.status(200).json();
+    const { email, password } = req.body;
+
+    let sql = `SELECT * FROM users WHERE email = ?`;
+    let values = [password, email];
+    const results = await connection.query(sql, values);
+    if (results.affectedRows == 0) {
+      return res.status(StatusCodes.BAD_REQUEST).end();
+    } else {
+      return res.status(StatusCodes.OK).json(results);
+    }
   } catch (error) {
     console.error(error);
+    return res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
