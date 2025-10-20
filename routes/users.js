@@ -1,7 +1,11 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { StatusCodes } from 'http-status-codes';
-import join from '../UserController';
+import {
+  join,
+  login,
+  requestPasswordReset,
+  passwordReset,
+} from '../UserController';
 
 const router = express.Router();
 
@@ -41,41 +45,12 @@ router.post(
 );
 
 // 로그인API
-router.post('/login', [validate], async (req, res) => {
-  try {
-    let newUser = req.body;
-    let { email, password } = newUser;
-
-    if (email || password) {
-      let sql;
-    } else {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: '아이디와 비밀번호를 모두 입력해주세요' });
-    }
-
-    res.status(StatusCodes.OK).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.post('/login', [validate], login);
 
 // 비밀번호 초기화 요청
-router.post('/reset', async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.post('/reset', [validate], requestPasswordReset);
 
 // 비밀번호 초기화
-router.put('/reset', async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.put('/reset', [validate], passwordReset);
 
 export default router;
