@@ -1,4 +1,4 @@
-import connection from './mariadb.js';
+import connection from './mariaDB.js';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -16,12 +16,12 @@ export const join = async (req, res) => {
       .pbkdf2Sync(password, salt, 10000, 10, 'sha512')
       .toString('base64');
 
-    let values = [email, password, salt];
-    let sql = 'INSERT INTO users (email,password) VALUES (?,?)';
+    let values = [email, hashPassword, salt];
+    let sql = 'INSERT INTO users (email, password, salt) VALUES (?, ?, ?)';
     await connection.query(sql, values);
     res.status(StatusCodes.CREATED).json(`회원가입완`);
-  } catch {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
@@ -40,6 +40,23 @@ export const login = async (req, res) => {
     let sql = 'SELECT * FROM users WHERE email = ?';
     const [results] = await connection.query(sql, [email]);
     const loginUser = results[0];
+
+    if (!loginUser) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: '이메일 또는 비밀번호가 틀렸습니다.',
+      });
+    }
+
+    if (!loginUser.salt) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: '계정에 문제가 있습니다. 다시 회원가입해주세요.',
+      });
+    }
+
+    const hashPassword = crypto
+      .pbkdf2Sync(password, loginUser.salt, 10000, 10, 'sha512')
+      .toString('base64');
+
     if (loginUser && loginUser.password == hashPassword) {
       // 토큰 발행
       let token = jwt.sign(
@@ -56,8 +73,8 @@ export const login = async (req, res) => {
     } else {
       res.status(403).json(`아이디 또는 비밀번호가 틀렸습니다!`);
     }
-  } catch {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(StatusCodes.UNAUTHORIZED).end();
   }
 };
@@ -74,8 +91,8 @@ export const passwordResetRequest = async (req, res) => {
     } else {
       return res.status(StatusCodes.UNAUTHORIZED).end();
     }
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     return res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
@@ -98,8 +115,8 @@ export const passwordReset = async (req, res) => {
     } else {
       return res.status(StatusCodes.OK).json(results);
     }
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     return res.status(StatusCodes.BAD_REQUEST).end();
   }
 };

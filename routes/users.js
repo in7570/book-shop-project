@@ -3,9 +3,9 @@ import { body, validationResult } from 'express-validator';
 import {
   join,
   login,
-  requestPasswordReset,
+  passwordResetRequest,
   passwordReset,
-} from '../UserController';
+} from '../UserController.js';
 
 const router = express.Router();
 
@@ -48,7 +48,7 @@ router.post(
 router.post('/login', [validate], login);
 
 // 비밀번호 초기화 요청
-router.post('/reset', [validate], requestPasswordReset);
+router.post('/reset', [validate], passwordResetRequest);
 
 // 비밀번호 초기화
 router.put('/reset', [validate], passwordReset);
