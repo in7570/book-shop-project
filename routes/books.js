@@ -1,5 +1,10 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import {
+  allBooks,
+  bookDetail,
+  booksByCategory,
+} from '../controller/BookController.js';
 
 const router = express.Router();
 
@@ -15,34 +20,16 @@ const validate = (req, res, next) => {
 };
 
 // 도서 전체 조회
-router.get('/', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.get('/', [validate], allBooks);
 
 // 도서 개별 조회
-router.get('/:category', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.get('/:category', [validate], bookDetail);
 
 // 카테고리별 도서 조회
 router.get(
-  '/?categoryId={categryId}&new={boolean}',
+  '/?categoryId=:categoryId&new=:boolean',
   [validate],
-  async (req, res) => {
-    try {
-      res.status(200).json();
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  booksByCategory
 );
 
 export default router;
