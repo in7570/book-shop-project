@@ -5,7 +5,7 @@ import {
   login,
   passwordResetRequest,
   passwordReset,
-} from '../UserController.js';
+} from '../controller/UserController.js';
 
 const router = express.Router();
 
