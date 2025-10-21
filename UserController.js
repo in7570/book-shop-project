@@ -1,14 +1,22 @@
-import connection from '../mariaDB';
+import connection from './mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import crypto from 'crypto'; // 암호화
 dotenv.config();
 
 export const join = async (req, res) => {
   try {
-    let newUser = req.body;
+    const newUser = req.body;
     let { email, password } = newUser;
-    let values = [email, password];
+
+    // 비밀번호 암호화
+    const salt = crypto.randomBytes(10).toString('base64');
+    const hashPassword = crypto
+      .pbkdf2Sync(password, salt, 10000, 10, 'sha512')
+      .toString('base64');
+
+    let values = [email, password, salt];
     let sql = 'INSERT INTO users (email,password) VALUES (?,?)';
     await connection.query(sql, values);
     res.status(StatusCodes.CREATED).json(`회원가입완`);
@@ -18,6 +26,7 @@ export const join = async (req, res) => {
   }
 };
 
+// 로그인
 export const login = async (req, res) => {
   try {
     let newUser = req.body;
@@ -31,7 +40,7 @@ export const login = async (req, res) => {
     let sql = 'SELECT * FROM users WHERE email = ?';
     const [results] = await connection.query(sql, [email]);
     const loginUser = results[0];
-    if (loginUser && loginUser.password == password) {
+    if (loginUser && loginUser.password == hashPassword) {
       // 토큰 발행
       let token = jwt.sign(
         { email: loginUser.email, name: loginUser.name },
@@ -53,7 +62,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const requestPasswordReset = async (req, res) => {
+export const passwordResetRequest = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -71,12 +80,18 @@ export const requestPasswordReset = async (req, res) => {
   }
 };
 
+// 비밀번호 초기화
 export const passwordReset = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    let sql = `SELECT * FROM users WHERE email = ?`;
-    let values = [password, email];
+    const salt = crypto.randomBytes(10).toString('base64');
+    const hashPassword = crypto
+      .pbkdf2Sync(password, salt, 10000, 10, 'sha512')
+      .toString('base64');
+
+    let sql = `UPDATE users SET password=?,salt=? WHERE email=?`;
+    let values = [hashPassword, salt, email];
     const results = await connection.query(sql, values);
     if (results.affectedRows == 0) {
       return res.status(StatusCodes.BAD_REQUEST).end();
