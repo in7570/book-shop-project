@@ -6,20 +6,25 @@ dotenv.config();
 // 도서 전체 조회
 export const allBooks = async (req, res) => {
   try {
-    let { category_id, news } = req.query;
+    let { category_id, news, currentPage } = req.query;
 
-    let sql = 'SELECT * FROM books';
+    let offset = limit * (currentPage - 1);
+
+    let sql = `SELECT * FROM books`;
     let values = [];
     if (category_id && news) {
       sql += `WHERE category_id =? AND pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH)AND NOW()`;
-      values = [category_id, news];
+      values = [category_id];
     } else if (category_id) {
       sql += `WHERE category_id=?`;
-      values = category_id;
+      values = [category_id];
     } else if (news) {
       sql += `WHERE pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH)AND NOW()`;
-      values = news;
+      values = values.push(news);
     }
+
+    sql += `LIMIT ? OFFSET ?`;
+    values.push(parseInt(limit), offset);
 
     let results = await connection.query(sql, category_id);
     if (results.length) {
