@@ -19,17 +19,13 @@ const validate = (req, res, next) => {
   }
 };
 
+// 카테고리별 도서 조회 - 쿼리가 있다면 우선 조회
+router.get('/', [validate], booksByCategory);
+
 // 도서 전체 조회
 router.get('/', [validate], allBooks);
 
 // 도서 개별 조회
-router.get('/:category', [validate], bookDetail);
-
-// 카테고리별 도서 조회
-router.get(
-  '/?categoryId=:categoryId&new=:boolean',
-  [validate],
-  booksByCategory
-);
+router.get('/:id', [validate], bookDetail);
 
 export default router;
