@@ -1,5 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import { addLike, removeLike } from '../controller/LikeController.js';
 
 const router = express.Router();
 
@@ -15,20 +16,9 @@ const validate = (req, res, next) => {
 };
 
 // 좋아요 추가
-router.post('/{bookId}', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.post('/:bookId', [validate], addLike);
 
 // 좋아요 취소
-router.delete('/{bookId}', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.delete('/:bookId', [validate], removeLike);
+
 export default router;
