@@ -12,12 +12,14 @@ app.listen(process.env.PORT, () => {
 
 import userRouter from './routes/users.js';
 import booksRouter from './routes/books.js';
-import ordersRouter from './routes/orders.js';
+import categoryRouter from './routes/category.js';
 import likesRouter from './routes/likes.js';
+// import ordersRouter from './routes/orders.js';
 import cartsRouter from './routes/carts.js';
 
 app.use('/users', userRouter);
 app.use('/books', booksRouter);
-app.use('/orders', ordersRouter);
+app.use('/category', categoryRouter);
 app.use('/likes', likesRouter);
+// app.use('/orders', ordersRouter);
 app.use('/carts', cartsRouter);
