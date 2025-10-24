@@ -4,7 +4,7 @@ import {
   addToCart,
   getCartItems,
   removeCartItem,
-} from '../controller/CartController';
+} from '../controller/CartController.js';
 
 const router = express.Router();
 
@@ -22,13 +22,11 @@ const validate = (req, res, next) => {
 // 장바구니 담기
 router.post('/', [validate], addToCart);
 
-// 장바구니 조회
+// 장바구니 조회  // 선택된 장바구니 아이템 조회
 router.get('/', [validate], getCartItems);
 
 // 장바구니 도서 삭제
-router.delete('/:bookId', [validate], removeCartItem);
+router.delete('/:id', [validate], removeCartItem);
 
-// // 장바구니에서 선택한 주문 "예상" 상품 목록 조회
-// router.delete('/', [validate], );
 
 export default router;
