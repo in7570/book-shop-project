@@ -1,5 +1,10 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import {
+  getOrderDetail,
+  getOrders,
+  order,
+} from '../controller/OrderController.js';
 
 const router = express.Router();
 
@@ -15,30 +20,12 @@ const validate = (req, res, next) => {
 };
 
 // 결제하기
-router.post('/', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.post('/', [validate], order);
 
 // 주문 내역 조회
-router.get('/', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.get('/', [validate], getOrders);
 
 // 주문 상세 조회
-router.get('/{orderId}', [validate], async (req, res) => {
-  try {
-    res.status(200).json();
-  } catch (error) {
-    console.error(error);
-  }
-});
+router.get('/:orderId', [validate], getOrderDetail);
 
 export default router;
