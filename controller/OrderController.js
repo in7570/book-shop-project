@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import connection from '../mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 import dotenv from 'dotenv';
@@ -6,14 +7,10 @@ dotenv.config();
 // 결제하기
 export const order = async (req, res) => {
   try {
-    const {
-      items,
-      delivery,
-      totalQuantity,
-      totalPrice,
-      userId,
-      firstBookTitle,
-    } = req.body;
+    const { items, delivery, totalQuantity, totalPrice, firstBookTitle } =
+      req.body;
+
+    let authorization = ensureAuthorization(req);
 
     // delivery_id 구하기
     let sql = `INSERT INTO delivery (address, receiver, contact) VALUES (?,?,?)`;
@@ -23,7 +20,13 @@ export const order = async (req, res) => {
 
     // order_id 구하기
     sql = `INSERT INTO orders (book_title,total_quantity,total_price,user_id,delivery_id) VALUES (?,?,?,?,?)`;
-    values = [firstBookTitle, totalQuantity, totalPrice, userId, delivery_id];
+    values = [
+      firstBookTitle,
+      totalQuantity,
+      totalPrice,
+      authorization.id,
+      delivery_id,
+    ];
     [results] = await connection.execute(sql, values); // [values] → values, 구조분해할당 추가
     let order_id = results.insertId;
 
@@ -51,13 +54,6 @@ export const order = async (req, res) => {
     console.error(err);
     res.status(StatusCodes.BAD_REQUEST).end();
   }
-};
-
-// 장바구니 내역 삭제(결제 완료 후)
-const deleteCartItems = async (connection, items) => {
-  let sql = `DELETE FROM cartItems WHERE id IN (?)`;
-  let result = await connection.query(sql, [items]);
-  return result;
 };
 
 // 주문 내역 조회
@@ -91,3 +87,20 @@ export const getOrderDetail = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json();
   }
 };
+
+// 장바구니 내역 삭제(결제 완료 후)
+const deleteCartItems = async (connection, items) => {
+  let sql = `DELETE FROM cartItems WHERE id IN (?)`;
+  let result = await connection.query(sql, [items]);
+  return result;
+};
+
+// 인증 인가
+function ensureAuthorization(req) {
+  let receivedJwt = req.headers['authorization'];
+  console.log('received jwt : ', receivedJwt);
+
+  let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
+  console.log(decodedJwt);
+  return decodedJwt;
+}

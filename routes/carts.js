@@ -26,7 +26,6 @@ router.post('/', [validate], addToCart);
 router.get('/', [validate], getCartItems);
 
 // 장바구니 도서 삭제
-router.delete('/:id', [validate], removeCartItem);
-
+router.delete('/:cartId', [validate], removeCartItem);
 
 export default router;

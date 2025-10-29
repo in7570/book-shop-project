@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import connection from '../mariadb.js';
 import { StatusCodes } from 'http-status-codes';
 import dotenv from 'dotenv';
@@ -7,10 +8,10 @@ dotenv.config();
 export const addLike = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { user_id } = req.body;
+    let authorization = ensureAuthorization(req);
 
     let sql = `INSERT INTO likes (user_id, liked_book_id) VALUES (?,?)`;
-    let values = [user_id, bookId];
+    let values = [authorization.id, bookId];
 
     const [results] = await connection.query(sql, values);
     res.status(StatusCodes.OK).json(results);
@@ -24,10 +25,10 @@ export const addLike = async (req, res) => {
 export const removeLike = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { user_id } = req.body;
+    let authorization = ensureAuthorization(req);
 
     let sql = `DELETE FROM likes WHERE user_id = ? AND liked_book_id = ?`;
-    let values = [user_id, bookId];
+    let values = [authorization.id, bookId];
 
     const [results] = await connection.query(sql, values);
     res.status(StatusCodes.OK).json(results);
@@ -36,3 +37,12 @@ export const removeLike = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).end();
   }
 };
+
+// 인증 인가
+function ensureAuthorization(req) {
+  let receivedJwt = req.headers['authorization'];
+  console.log('received jwt : ', receivedJwt);
+
+  let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
+  return decodedJwt;
+}
